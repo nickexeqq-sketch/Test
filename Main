@@ -1,0 +1,123 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local Player = Players.LocalPlayer
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = Player:WaitForChild("PlayerGui")
+
+local ON____Off = Instance.new("TextButton")
+ON____Off.Size = UDim2.new(0, 94, 0, 50)
+ON____Off.Position = UDim2.new(0.45, 0, 0.55, 0)
+ON____Off.BackgroundColor3 = Color3.fromRGB(84, 84, 84)
+ON____Off.BorderSizePixel = 0
+ON____Off.Text = ""
+ON____Off.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(1)
+UICorner.Parent = ON____Off
+
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 43, 0, 45)
+Frame.Position = UDim2.new(0.01, 0, 0.05, 0)
+Frame.BackgroundColor3 = Color3.fromRGB(4, 4, 4)
+Frame.BorderSizePixel = 0
+Frame.Parent = ON____Off
+
+local UICorner_2 = Instance.new("UICorner")
+UICorner_2.CornerRadius = UDim.new(1)
+UICorner_2.Parent = Frame
+
+-- Tween config
+local TweenInfoConfig = TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+local goalOn = {Position = UDim2.new(0.52, 0, 0.05, 0)}
+local goalOff = {Position = UDim2.new(0.01, 0, 0.05, 0)}
+
+local toggled = false
+
+-- Função que cria BillboardGui + Highlight em 1 jogador
+local function addEffectsToPlayer(targetPlayer)
+	local character = targetPlayer.Character
+	if not character then return end
+
+	-- BillboardGui na cabeça
+	local head = character:FindFirstChild("Head")
+	if head and not head:FindFirstChild("CustomBillboard") then
+		local billboard = Instance.new("BillboardGui")
+		billboard.Name = "CustomBillboard"
+		billboard.Size = UDim2.new(0, 100, 0, 30)
+		billboard.StudsOffset = Vector3.new(0, 2, 0)
+		billboard.AlwaysOnTop = true
+		billboard.Parent = head
+
+		local textLabel = Instance.new("TextLabel")
+		textLabel.Size = UDim2.new(1, 0, 1, 0)
+		textLabel.BackgroundTransparency = 1
+		textLabel.Text = targetPlayer.Name
+		textLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+		textLabel.TextStrokeTransparency = 0
+		textLabel.Parent = billboard
+	end
+
+	-- Highlight no personagem
+	if not character:FindFirstChild("CustomHighlight") then
+		local highlight = Instance.new("Highlight")
+		highlight.Name = "CustomHighlight"
+		highlight.FillColor = Color3.fromRGB(255, 255, 0)
+		highlight.OutlineColor = Color3.fromRGB(0, 0, 0)
+		highlight.Adornee = character
+		highlight.Parent = character
+	end
+end
+
+-- Função que remove BillboardGui + Highlight de 1 jogador
+local function removeEffectsFromPlayer(targetPlayer)
+	local character = targetPlayer.Character
+	if not character then return end
+
+	local head = character:FindFirstChild("Head")
+	if head then
+		local billboard = head:FindFirstChild("CustomBillboard")
+		if billboard then billboard:Destroy() end
+	end
+
+	local highlight = character:FindFirstChild("CustomHighlight")
+	if highlight then highlight:Destroy() end
+end
+
+-- Botão ON/OFF
+ON____Off.MouseButton1Click:Connect(function()
+	toggled = not toggled
+
+	-- Anima botão
+	local goal = toggled and goalOn or goalOff
+	local tween = TweenService:Create(Frame, TweenInfoConfig, goal)
+	tween:Play()
+
+	if toggled then
+		-- Ativar efeitos em todos os jogadores atuais
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr ~= Player then
+				addEffectsToPlayer(plr)
+			end
+		end
+	else
+		-- Remover efeitos
+		for _, plr in ipairs(Players:GetPlayers()) do
+			if plr ~= Player then
+				removeEffectsFromPlayer(plr)
+			end
+		end
+	end
+end)
+
+-- Garantir que novos players também recebam efeito se estiver ligado
+Players.PlayerAdded:Connect(function(plr)
+	plr.CharacterAdded:Connect(function()
+		if toggled then
+			task.wait(1) -- esperar carregar personagem
+			addEffectsToPlayer(plr)
+		end
+	end)
+end)
