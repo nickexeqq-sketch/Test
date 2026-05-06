@@ -185,7 +185,7 @@ function library:Window(name)
 
         local notif = Instance.new("TextLabel")
         notif.Parent = ScreenGui
-        notif.Size = UDim2.new(0, 200, 0, 40)
+        notif.Size = UDim2.new(0, 420, 0, 120)
         notif.Position = UDim2.new(0, 15, 1, -60 - notifY)
         notif.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         notif.TextColor3 = Color3.new(1, 1, 1)
