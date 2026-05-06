@@ -227,7 +227,7 @@ function library:Window(name)
         local function updateNotifications()
             local spacing = 80 
             -- Altura base ajustada para ficar em cima do dinheiro
-            local baseHeight = -60 
+            local baseHeight = -10
             
             for i, n in ipairs(activeNotifications) do
                 if n and n.Parent then
