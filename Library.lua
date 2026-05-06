@@ -1,3 +1,4 @@
+
 -- credits to wally for the resize function & math for windows <3
 -- if you want to use this, credit me & wally :-)
 
@@ -185,7 +186,6 @@ function library:Window(name)
         local notif = Instance.new("TextLabel")
         notif.Parent = ScreenGui
         notif.Size = UDim2.new(0, 200, 0, 40)
-        -- Começa mais em baixo, no lado esquerdo
         notif.Position = UDim2.new(0, 15, 1, -60 - notifY)
         notif.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         notif.TextColor3 = Color3.new(1, 1, 1)
@@ -193,6 +193,18 @@ function library:Window(name)
         notif.TextSize = 14
         notif.Text = text
         notif.AnchorPoint = Vector2.new(0, 1)
+        
+        -- [NOVO] Garante que o texto não saia da caixa
+        notif.TextWrapped = true
+        notif.ClipsDescendants = true
+
+        -- [NOVO] Adiciona um espaçamento interno (padding)
+        local uiPadding = Instance.new("UIPadding")
+        uiPadding.PaddingLeft = UDim.new(0, 8)
+        uiPadding.PaddingRight = UDim.new(0, 8)
+        uiPadding.PaddingTop = UDim.new(0, 5)
+        uiPadding.PaddingBottom = UDim.new(0, 5)
+        uiPadding.Parent = notif
 
         -- Bordas arredondadas
         local uiCorner = Instance.new("UICorner")
@@ -202,27 +214,14 @@ function library:Window(name)
         -- Borda (Stroke)
         local uiStroke = Instance.new("UIStroke")
         uiStroke.Thickness = 2
+        uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border -- Aplica corretamente ao redor da caixa
         uiStroke.Parent = notif
 
-        -- Gradiente RGB da borda
-        local uiGradient = Instance.new("UIGradient")
-        uiGradient.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
-            ColorSequenceKeypoint.new(0.16, Color3.fromRGB(255, 255, 0)),
-            ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
-            ColorSequenceKeypoint.new(0.66, Color3.fromRGB(0, 0, 255)),
-            ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
-        })
-        uiGradient.Parent = uiStroke
-
-        -- Animação infinita do RGB
+        -- [NOVO] Animação do RGB muito mais fluida e que realmente funciona
         task.spawn(function()
-            local rotation = 0
             while notif.Parent do
-                rotation = (rotation + 3) % 360
-                uiGradient.Rotation = rotation
+                -- Muda a cor do arco-íris progressivamente baseando-se no tempo (tick)
+                uiStroke.Color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
                 task.wait()
             end
         end)
