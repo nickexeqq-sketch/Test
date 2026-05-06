@@ -185,14 +185,14 @@ function library:Window(name)
 
         local notif = Instance.new("TextLabel")
         notif.Parent = ScreenGui
-        notif.Size = UDim2.new(0, 220, 0, 60)
-        notif.Position = UDim2.new(0, 15, 1, -60 - notifY)
+        notif.Size = UDim2.new(0, 220, 0, 70)
+        notif.Position = UDim2.new(0.5, -110, 1, -60 - notifY)
         notif.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         notif.TextColor3 = Color3.new(1, 1, 1)
         notif.Font = Enum.Font.Gotham
-        notif.TextSize = 14
+        notif.TextSize = 16
         notif.Text = text
-        notif.AnchorPoint = Vector2.new(0, 1)
+        notif.AnchorPoint = Vector2.new(0.5, 1)
         
         -- [NOVO] Garante que o texto não saia da caixa
         notif.TextWrapped = true
@@ -228,16 +228,14 @@ function library:Window(name)
 
         -- Tween de entrada (lado esquerdo)
         notif:TweenPosition(
-            UDim2.new(0, 15, 1, -110 - notifY),
-            "Out", "Sine", 0.3, true
-        )
+        UDim2.new(0.5, -110, 1, -110 - notifY),
+        "Out", "Sine", 0.3, true)
 
         task.delay(time, function()
             -- Tween de saída (lado esquerdo)
             notif:TweenPosition(
-                UDim2.new(0, 15, 1, -60 - notifY),
-                "In", "Sine", 0.3, true
-            )
+    UDim2.new(0.5, -110, 1, -60 - notifY),
+    "In", "Sine", 0.3, true)
             task.wait(0.3)
             notif:Destroy()
             notifY -= 50
