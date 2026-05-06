@@ -175,33 +175,31 @@ function library:Window(name)
         reSize()
     end
 
-
-    local notifY = 0
+local activeNotifications = {} -- [NOVO] Tabela para gerenciar a fila e evitar sobreposição
 
     function library:Notify(text, time)
         time = time or 3
 
-        notifY += 50
-
         local notif = Instance.new("TextLabel")
         notif.Parent = ScreenGui
         notif.Size = UDim2.new(0, 220, 0, 70)
-        notif.Position = UDim2.new(0, 15, 1, -15 - notifY)
+        
+        -- Posição inicial: fora da tela à esquerda, na altura meio-baixo (Y Scale 0.65)
+        notif.Position = UDim2.new(0, -250, 0.65, 0) 
+        notif.AnchorPoint = Vector2.new(0, 0.5) -- Ajuda a centralizar o eixo Y
+        
         notif.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         notif.TextColor3 = Color3.new(1, 1, 1)
         notif.Font = Enum.Font.Gotham
         notif.TextSize = 16
         notif.Text = text
-        notif.AnchorPoint = Vector2.new(0, 1)
         notif.BackgroundTransparency = 0.15
         notif.TextXAlignment = Enum.TextXAlignment.Center
         notif.TextYAlignment = Enum.TextYAlignment.Center
-        
-        -- [NOVO] Garante que o texto não saia da caixa
+
         notif.TextWrapped = true
         notif.ClipsDescendants = true
 
-        -- [NOVO] Adiciona um espaçamento interno (padding)
         local uiPadding = Instance.new("UIPadding")
         uiPadding.PaddingLeft = UDim.new(0, 8)
         uiPadding.PaddingRight = UDim.new(0, 8)
@@ -209,40 +207,62 @@ function library:Window(name)
         uiPadding.PaddingBottom = UDim.new(0, 5)
         uiPadding.Parent = notif
 
-        -- Bordas arredondadas
         local uiCorner = Instance.new("UICorner")
         uiCorner.CornerRadius = UDim.new(0, 6)
         uiCorner.Parent = notif
 
-        -- Borda (Stroke)
         local uiStroke = Instance.new("UIStroke")
         uiStroke.Thickness = 2
-        uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border -- Aplica corretamente ao redor da caixa
+        uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border 
         uiStroke.Parent = notif
 
-        -- [NOVO] Animação do RGB muito mais fluida e que realmente funciona
+        -- Animação do RGB
         task.spawn(function()
             while notif.Parent do
-                -- Muda a cor do arco-íris progressivamente baseando-se no tempo (tick)
                 uiStroke.Color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
                 task.wait()
             end
         end)
 
-        notif:TweenPosition(
-    UDim2.new(0, 15, 1, -90 - notifY),
-    "Out", "Sine", 0.3, true
-)
+        -- Adiciona esta notificação à lista de ativas
+        table.insert(activeNotifications, notif)
+
+        -- [NOVO] Função interna para organizar as notificações empilhadas
+        local function updateNotifications()
+            local spacing = 80 -- Espaço vertical entre cada caixa (70 da caixa + 10 de margem)
+            
+            for i, n in ipairs(activeNotifications) do
+                if n and n.Parent then
+                    -- i=1 é a primeira. Ela fica no 0.65. As próximas sobem na tela.
+                    local targetPos = UDim2.new(0, 15, 0.65, -(i - 1) * spacing)
+                    n:TweenPosition(targetPos, "Out", "Sine", 0.3, true)
+                end
+            end
+        end
+
+        -- Atualiza a posição de todas assim que essa entra na tela
+        updateNotifications()
 
         task.delay(time, function()
-            -- Tween de saída (lado esquerdo)
+            -- Busca e remove essa notificação específica da tabela
+            for i, n in ipairs(activeNotifications) do
+                if n == notif then
+                    table.remove(activeNotifications, i)
+                    break
+                end
+            end
+            
+            -- Animação de saída deslizando para a esquerda
             notif:TweenPosition(
-    UDim2.new(0, 15, 1, -15 - notifY),
-    "In", "Sine", 0.3, true
-)
+                UDim2.new(0, -250, 0.65, notif.Position.Y.Offset),
+                "In", "Sine", 0.3, true
+            )
+            
+            -- Reorganiza as notificações que sobraram na tela para "escorregarem" para baixo
+            updateNotifications()
+            
             task.wait(0.3)
             notif:Destroy()
-            notifY -= 50
         end)
     end
 
