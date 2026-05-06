@@ -186,7 +186,7 @@ function library:Window(name)
         local notif = Instance.new("TextLabel")
         notif.Parent = ScreenGui
         notif.Size = UDim2.new(0, 220, 0, 70)
-        notif.Position = UDim2.new(0.5, -170, 1, -20 - notifY)
+        notif.Position = UDim2.new(0.5, -170, 1, -5 - notifY)
         notif.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         notif.TextColor3 = Color3.new(1, 1, 1)
         notif.Font = Enum.Font.Gotham
@@ -230,13 +230,14 @@ function library:Window(name)
         end)
 
         notif:TweenPosition(
-    UDim2.new(0.5, -170, 1, -80 - notifY),
-    "Out", "Sine", 0.3, true)
+    UDim2.new(0.5, -170, 1, -70 - notifY),
+    "Out", "Sine", 0.3, true
+)
 
         task.delay(time, function()
             -- Tween de saída (lado esquerdo)
             notif:TweenPosition(
-    UDim2.new(0.5, -170, 1, -20 - notifY),
+    UDim2.new(0.5, -170, 1, -5 - notifY),
     "In", "Sine", 0.3, true
 )
             task.wait(0.3)
