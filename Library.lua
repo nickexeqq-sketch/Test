@@ -173,13 +173,19 @@ function library:Window(name)
         end)
         reSize()
     end
+
+
+local notifY = 0
+
 function library:Notify(text, time)
     time = time or 3
 
+    notifY += 50
+
     local notif = Instance.new("TextLabel")
-    notif.Parent = game.CoreGui.gradient_lib
+    notif.Parent = ScreenGui
     notif.Size = UDim2.new(0, 200, 0, 40)
-    notif.Position = UDim2.new(1, -210, 1, -60)
+    notif.Position = UDim2.new(1, -210, 1, -60 - notifY)
     notif.BackgroundColor3 = Color3.fromRGB(30,30,30)
     notif.TextColor3 = Color3.new(1,1,1)
     notif.Font = Enum.Font.Gotham
@@ -188,19 +194,22 @@ function library:Notify(text, time)
     notif.AnchorPoint = Vector2.new(0,1)
 
     notif:TweenPosition(
-        UDim2.new(1, -210, 1, -110),
+        UDim2.new(1, -210, 1, -110 - notifY),
         "Out","Sine",0.3,true
     )
 
     task.delay(time, function()
         notif:TweenPosition(
-            UDim2.new(1, -210, 1, -60),
+            UDim2.new(1, -210, 1, -60 - notifY),
             "In","Sine",0.3,true
         )
         task.wait(0.3)
         notif:Destroy()
+        notifY -= 50
     end)
 end
+
+
     function window:Button(name, callback)
         local Button = Instance.new("TextButton")
 
