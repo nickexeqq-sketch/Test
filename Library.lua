@@ -192,7 +192,7 @@ function library:Window(name)
         end)
         reSize()
     end
-    function window:Dropdown(name, objects, callback)
+        function window:Dropdown(name, objects, callback)
         local toggled = false
         local Dropdown = Instance.new("Frame")
         local Title = Instance.new("TextLabel")
@@ -201,8 +201,6 @@ function library:Window(name)
         local UIListLayout = Instance.new("UIListLayout")
         local y = 2
         for i, v in pairs(objects) do y = y + 28 end
-
-        --Properties:
 
         Dropdown.Name = "Dropdown"
         Dropdown.Parent = Container
@@ -216,7 +214,7 @@ function library:Window(name)
         Title.BackgroundTransparency = 1.000
         Title.Size = UDim2.new(0, 180, 0, 30)
         Title.Font = Enum.Font.Gotham
-        Title.Text = "  " .. name
+        Title.Text = "  " .. name -- Texto inicial
         Title.TextColor3 = Color3.fromRGB(255, 255, 255)
         Title.TextSize = 16.000
         Title.TextXAlignment = Enum.TextXAlignment.Left
@@ -240,18 +238,22 @@ function library:Window(name)
 
         UIListLayout.Parent = Main
         UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        
-        Toggle.MouseButton1Click:Connect(function()
+
+        -- Função para fechar/abrir o menu
+        local function toggleDropdown()
             toggled = not toggled
-	        game:GetService("TweenService"):Create(Toggle, TweenInfo.new(0.35), {Rotation = toggled and 90 or 0}):Play()
-	        Main:TweenSize(toggled and UDim2.new(0, 180, 0, y) or UDim2.new(0, 180, 0, 0), "Out", "Sine", 0.35, true)
+            game:GetService("TweenService"):Create(Toggle, TweenInfo.new(0.35), {Rotation = toggled and 90 or 0}):Play()
+            Main:TweenSize(toggled and UDim2.new(0, 180, 0, y) or UDim2.new(0, 180, 0, 0), "Out", "Sine", 0.35, true)
+            
             if toggled then
                 Frame.ClipsDescendants = false
             else
-                wait(.35)
-                Frame.ClipsDescendants = true
+                task.wait(.35)
+                if not toggled then Frame.ClipsDescendants = true end
             end
-        end)
+        end
+
+        Toggle.MouseButton1Click:Connect(toggleDropdown)
 
         for i, v in pairs(objects) do
             local TextButton = Instance.new("TextButton")
@@ -266,12 +268,16 @@ function library:Window(name)
             TextButton.TextSize = 16.000
             TextButton.TextXAlignment = Enum.TextXAlignment.Left
 
+            -- Ação ao clicar em uma opção do dropdown
             TextButton.MouseButton1Click:Connect(function()
-                callback(tostring(v))
+                Title.Text = "  " .. name .. ": " .. tostring(v) -- Atualiza o texto visual
+                callback(tostring(v)) -- Executa sua função
+                toggleDropdown() -- Fecha o menu após escolher
             end)
         end
         reSize()
     end
+
     function window:Box(name, default, callback)
 	local name = name or "Box"
 	local callback = typeof(default) == "function" and default or callback
