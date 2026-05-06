@@ -176,4 +176,4 @@ function library:Window(name)
     return window
 end
 
-return librarys
+return library
