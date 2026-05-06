@@ -1,4 +1,3 @@
-
 -- credits to wally for the resize function & math for windows <3
 -- if you want to use this, credit me & wally :-)
 
@@ -187,7 +186,7 @@ function library:Window(name)
         notif.Parent = ScreenGui
         notif.Size = UDim2.new(0, 220, 0, 70)
         
-        -- [MUDANÇA AQUI] Ancoramos na parte de baixo da notificação
+        -- Ancoramos na parte de baixo da notificação
         notif.AnchorPoint = Vector2.new(0, 1) 
         
         -- Começa fora da tela à esquerda (-250) e presa no fundo absoluto da tela (1)
@@ -227,9 +226,8 @@ function library:Window(name)
 
         local function updateNotifications()
             local spacing = 80 
-            -- [NOVO] Altura base em pixels partindo do fundo da tela. 
-            -- Aumente esse número (ex: -150) se quiser que suba, ou diminua (ex: -90) para descer mais.
-            local baseHeight = -120 
+            -- Altura base ajustada para ficar em cima do dinheiro
+            local baseHeight = -150 
             
             for i, n in ipairs(activeNotifications) do
                 if n and n.Parent then
@@ -439,5 +437,3 @@ function library:Window(name)
     return window
 end
 return library
-
-  
