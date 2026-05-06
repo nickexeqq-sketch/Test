@@ -175,39 +175,75 @@ function library:Window(name)
     end
 
 
-local notifY = 0
+    local notifY = 0
 
-function library:Notify(text, time)
-    time = time or 3
+    function library:Notify(text, time)
+        time = time or 3
 
-    notifY += 50
+        notifY += 50
 
-    local notif = Instance.new("TextLabel")
-    notif.Parent = ScreenGui
-    notif.Size = UDim2.new(0, 200, 0, 40)
-    notif.Position = UDim2.new(1, -210, 1, -60 - notifY)
-    notif.BackgroundColor3 = Color3.fromRGB(30,30,30)
-    notif.TextColor3 = Color3.new(1,1,1)
-    notif.Font = Enum.Font.Gotham
-    notif.TextSize = 14
-    notif.Text = text
-    notif.AnchorPoint = Vector2.new(0,1)
+        local notif = Instance.new("TextLabel")
+        notif.Parent = ScreenGui
+        notif.Size = UDim2.new(0, 200, 0, 40)
+        -- Começa mais em baixo, no lado esquerdo
+        notif.Position = UDim2.new(0, 15, 1, -60 - notifY)
+        notif.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        notif.TextColor3 = Color3.new(1, 1, 1)
+        notif.Font = Enum.Font.Gotham
+        notif.TextSize = 14
+        notif.Text = text
+        notif.AnchorPoint = Vector2.new(0, 1)
 
-    notif:TweenPosition(
-        UDim2.new(1, -210, 1, -110 - notifY),
-        "Out","Sine",0.3,true
-    )
+        -- Bordas arredondadas
+        local uiCorner = Instance.new("UICorner")
+        uiCorner.CornerRadius = UDim.new(0, 6)
+        uiCorner.Parent = notif
 
-    task.delay(time, function()
+        -- Borda (Stroke)
+        local uiStroke = Instance.new("UIStroke")
+        uiStroke.Thickness = 2
+        uiStroke.Parent = notif
+
+        -- Gradiente RGB da borda
+        local uiGradient = Instance.new("UIGradient")
+        uiGradient.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+            ColorSequenceKeypoint.new(0.16, Color3.fromRGB(255, 255, 0)),
+            ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
+            ColorSequenceKeypoint.new(0.66, Color3.fromRGB(0, 0, 255)),
+            ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+        })
+        uiGradient.Parent = uiStroke
+
+        -- Animação infinita do RGB
+        task.spawn(function()
+            local rotation = 0
+            while notif.Parent do
+                rotation = (rotation + 3) % 360
+                uiGradient.Rotation = rotation
+                task.wait()
+            end
+        end)
+
+        -- Tween de entrada (lado esquerdo)
         notif:TweenPosition(
-            UDim2.new(1, -210, 1, -60 - notifY),
-            "In","Sine",0.3,true
+            UDim2.new(0, 15, 1, -110 - notifY),
+            "Out", "Sine", 0.3, true
         )
-        task.wait(0.3)
-        notif:Destroy()
-        notifY -= 50
-    end)
-end
+
+        task.delay(time, function()
+            -- Tween de saída (lado esquerdo)
+            notif:TweenPosition(
+                UDim2.new(0, 15, 1, -60 - notifY),
+                "In", "Sine", 0.3, true
+            )
+            task.wait(0.3)
+            notif:Destroy()
+            notifY -= 50
+        end)
+    end
 
 
     function window:Button(name, callback)
@@ -391,3 +427,5 @@ end
     return window
 end
 return library
+
+  
