@@ -175,7 +175,10 @@ function library:Window(name)
         reSize()
     end
 
-local activeNotifications = {} -- [NOVO] Tabela para gerenciar a fila e evitar sobreposição
+
+
+
+    local activeNotifications = {} 
 
     function library:Notify(text, time)
         time = time or 3
@@ -184,9 +187,11 @@ local activeNotifications = {} -- [NOVO] Tabela para gerenciar a fila e evitar s
         notif.Parent = ScreenGui
         notif.Size = UDim2.new(0, 220, 0, 70)
         
-        -- Posição inicial: fora da tela à esquerda, na altura meio-baixo (Y Scale 0.65)
-        notif.Position = UDim2.new(0, -250, 2, 0) 
-        notif.AnchorPoint = Vector2.new(0, 0.5) -- Ajuda a centralizar o eixo Y
+        -- [MUDANÇA AQUI] Ancoramos na parte de baixo da notificação
+        notif.AnchorPoint = Vector2.new(0, 1) 
+        
+        -- Começa fora da tela à esquerda (-250) e presa no fundo absoluto da tela (1)
+        notif.Position = UDim2.new(0, -250, 1, 0) 
         
         notif.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         notif.TextColor3 = Color3.new(1, 1, 1)
@@ -194,17 +199,12 @@ local activeNotifications = {} -- [NOVO] Tabela para gerenciar a fila e evitar s
         notif.TextSize = 16
         notif.Text = text
         notif.BackgroundTransparency = 0.15
-        notif.TextXAlignment = Enum.TextXAlignment.Center
-        notif.TextYAlignment = Enum.TextYAlignment.Center
-
         notif.TextWrapped = true
         notif.ClipsDescendants = true
 
         local uiPadding = Instance.new("UIPadding")
         uiPadding.PaddingLeft = UDim.new(0, 8)
         uiPadding.PaddingRight = UDim.new(0, 8)
-        uiPadding.PaddingTop = UDim.new(0, 5)
-        uiPadding.PaddingBottom = UDim.new(0, 5)
         uiPadding.Parent = notif
 
         local uiCorner = Instance.new("UICorner")
@@ -216,7 +216,6 @@ local activeNotifications = {} -- [NOVO] Tabela para gerenciar a fila e evitar s
         uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border 
         uiStroke.Parent = notif
 
-        -- Animação do RGB
         task.spawn(function()
             while notif.Parent do
                 uiStroke.Color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
@@ -224,27 +223,26 @@ local activeNotifications = {} -- [NOVO] Tabela para gerenciar a fila e evitar s
             end
         end)
 
-        -- Adiciona esta notificação à lista de ativas
         table.insert(activeNotifications, notif)
 
-        -- [NOVO] Função interna para organizar as notificações empilhadas
         local function updateNotifications()
-            local spacing = 80 -- Espaço vertical entre cada caixa (70 da caixa + 10 de margem)
+            local spacing = 80 
+            -- [NOVO] Altura base em pixels partindo do fundo da tela. 
+            -- Aumente esse número (ex: -150) se quiser que suba, ou diminua (ex: -90) para descer mais.
+            local baseHeight = -120 
             
             for i, n in ipairs(activeNotifications) do
                 if n and n.Parent then
-                    -- i=1 é a primeira. Ela fica no 0.65. As próximas sobem na tela.
-                    local targetPos = UDim2.new(0, 15, 0.65, -(i - 1) * spacing)
+                    -- Usa "1" para colar no fundo, e subtrai os pixels exatos para subir
+                    local targetPos = UDim2.new(0, 15, 1, baseHeight - ((i - 1) * spacing))
                     n:TweenPosition(targetPos, "Out", "Sine", 0.3, true)
                 end
             end
         end
 
-        -- Atualiza a posição de todas assim que essa entra na tela
         updateNotifications()
 
         task.delay(time, function()
-            -- Busca e remove essa notificação específica da tabela
             for i, n in ipairs(activeNotifications) do
                 if n == notif then
                     table.remove(activeNotifications, i)
@@ -252,20 +250,13 @@ local activeNotifications = {} -- [NOVO] Tabela para gerenciar a fila e evitar s
                 end
             end
             
-            -- Animação de saída deslizando para a esquerda
-            notif:TweenPosition(
-                UDim2.new(0, -250, 0.65, notif.Position.Y.Offset),
-                "In", "Sine", 0.3, true
-            )
-            
-            -- Reorganiza as notificações que sobraram na tela para "escorregarem" para baixo
+            notif:TweenPosition(UDim2.new(0, -250, 1, notif.Position.Y.Offset), "In", "Sine", 0.3, true)
             updateNotifications()
             
             task.wait(0.3)
             notif:Destroy()
         end)
     end
-
 
     function window:Button(name, callback)
         local Button = Instance.new("TextButton")
