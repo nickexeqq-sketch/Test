@@ -185,7 +185,7 @@ local activeNotifications = {} -- [NOVO] Tabela para gerenciar a fila e evitar s
         notif.Size = UDim2.new(0, 220, 0, 70)
         
         -- Posição inicial: fora da tela à esquerda, na altura meio-baixo (Y Scale 0.65)
-        notif.Position = UDim2.new(0, -250, 0.98, 0) 
+        notif.Position = UDim2.new(0, -250, 2, 0) 
         notif.AnchorPoint = Vector2.new(0, 0.5) -- Ajuda a centralizar o eixo Y
         
         notif.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
