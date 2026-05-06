@@ -2,14 +2,33 @@ if game.CoreGui:FindFirstChild("gradient_lib") then
     game.CoreGui.gradient_lib:Destroy()
 end
 
-local library = {windows = 0}
+local HttpService = game:GetService("HttpService")
+local UIS = game:GetService("UserInputService")
+
+local library = {windows = 0, theme = {bg = Color3.fromRGB(35,35,35), accent = Color3.fromRGB(0,170,255)}}
 local ScreenGui = Instance.new("ScreenGui")
 
-function library:Window(name)
-    local window = {toggled = false, flags = {}}
-    local Frame = Instance.new("ImageLabel")
-    local Title = Instance.new("TextLabel")
-    local Toggle = Instance.new("ImageButton")
+function library:SetTheme(t)
+    for i,v in pairs(t) do
+        library.theme[i] = v
+    end
+end
+
+function library:SaveConfig(name, flags)
+    if writefile then
+        writefile(name..".json", HttpService:JSONEncode(flags))
+    end
+end
+
+function library:LoadConfig(name)
+    if readfile and isfile and isfile(name..".json") then
+        return HttpService:JSONDecode(readfile(name..".json"))
+    end
+end
+
+function library:Window(name, keybind)
+    local window = {toggled = true, flags = {}}
+    local Frame = Instance.new("Frame")
     local Container = Instance.new("Frame")
     local UIListLayout = Instance.new("UIListLayout")
 
@@ -18,29 +37,20 @@ function library:Window(name)
     ScreenGui.Parent = game.CoreGui
 
     Frame.Parent = ScreenGui
-    Frame.Size = UDim2.new(0,180,0,227)
-    Frame.Position = UDim2.new(0,15 + ((190 * library.windows) - 190),0,15)
-    Frame.BackgroundTransparency = 1
-    Frame.Image = "rbxassetid://3570695787"
-    Frame.ScaleType = Enum.ScaleType.Slice
-    Frame.SliceCenter = Rect.new(100,100,100,100)
+    Frame.Size = UDim2.new(0,200,0,250)
+    Frame.Position = UDim2.new(0,20 + ((210 * library.windows) - 210),0,20)
+    Frame.BackgroundColor3 = library.theme.bg
     Frame.Active = true
     Frame.Draggable = true
 
-    Title.Parent = Frame
+    local Title = Instance.new("TextLabel", Frame)
     Title.Size = UDim2.new(1,0,0,30)
     Title.BackgroundTransparency = 1
-    Title.Font = Enum.Font.Gotham
     Title.Text = " "..name
     Title.TextColor3 = Color3.new(1,1,1)
-    Title.TextSize = 20
+    Title.Font = Enum.Font.Gotham
+    Title.TextSize = 18
     Title.TextXAlignment = Enum.TextXAlignment.Left
-
-    Toggle.Parent = Frame
-    Toggle.Position = UDim2.new(0,152,0,2)
-    Toggle.Size = UDim2.new(0,22,0,22)
-    Toggle.BackgroundTransparency = 1
-    Toggle.Image = "rbxassetid://4845446011"
 
     Container.Parent = Frame
     Container.Position = UDim2.new(0,0,0,30)
@@ -49,51 +59,56 @@ function library:Window(name)
 
     UIListLayout.Parent = Container
 
-    local function reSize()
-        local y = 34
+    if keybind then
+        UIS.InputBegan:Connect(function(input,gp)
+            if not gp and input.KeyCode == keybind then
+                window.toggled = not window.toggled
+                Frame.Visible = window.toggled
+            end
+        end)
+    end
+
+    local function resize()
+        local y = 5
         for _,v in pairs(Container:GetChildren()) do
             if v:IsA("Frame") or v:IsA("TextButton") then
                 y += v.AbsoluteSize.Y
             end
         end
-        Frame.Size = UDim2.new(0,180,0,y)
+        Frame.Size = UDim2.new(0,200,0,y+30)
     end
 
-    -- BUTTON
     function window:Button(name, callback)
         local b = Instance.new("TextButton")
         b.Parent = Container
         b.Size = UDim2.new(1,0,0,28)
         b.BackgroundTransparency = 1
-        b.Font = Enum.Font.Gotham
         b.Text = " "..name
         b.TextColor3 = Color3.new(1,1,1)
+        b.Font = Enum.Font.Gotham
         b.TextXAlignment = Enum.TextXAlignment.Left
-
         b.MouseButton1Click:Connect(callback)
-        reSize()
+        resize()
     end
 
     function window:Toggle(name, callback)
         local state = false
-
         local b = Instance.new("TextButton")
         b.Parent = Container
         b.Size = UDim2.new(1,0,0,28)
         b.BackgroundTransparency = 1
         b.Text = " "..name.." [OFF]"
         b.TextColor3 = Color3.new(1,1,1)
+        b.Font = Enum.Font.Gotham
         b.TextXAlignment = Enum.TextXAlignment.Left
 
         b.MouseButton1Click:Connect(function()
             state = not state
             window.flags[name] = state
             b.Text = " "..name.." ["..(state and "ON" or "OFF").."]"
-
             if callback then callback(state) end
         end)
-
-        reSize()
+        resize()
     end
 
     function window:Box(name, default, callback)
@@ -106,7 +121,7 @@ function library:Window(name)
         box.Parent = frame
         box.Size = UDim2.new(1,-10,1,0)
         box.Position = UDim2.new(0,5,0,0)
-        box.BackgroundColor3 = Color3.fromRGB(40,40,40)
+        box.BackgroundColor3 = library.theme.bg
         box.TextColor3 = Color3.new(1,1,1)
         box.PlaceholderText = default or "value"
         box.Text = ""
@@ -114,13 +129,11 @@ function library:Window(name)
         box.FocusLost:Connect(function()
             local text = tostring(box.Text)
             window.flags[name] = text
-
             if callback then callback(text) end
         end)
-
-        reSize()
+        resize()
     end
-    
+
     function window:Dropdown(name, list, callback)
         local frame = Instance.new("Frame")
         frame.Parent = Container
@@ -133,6 +146,7 @@ function library:Window(name)
         title.BackgroundTransparency = 1
         title.Text = " "..name
         title.TextColor3 = Color3.new(1,1,1)
+        title.Font = Enum.Font.Gotham
         title.TextXAlignment = Enum.TextXAlignment.Left
 
         local open = false
@@ -141,7 +155,7 @@ function library:Window(name)
         listFrame.Position = UDim2.new(0,0,0,30)
         listFrame.Size = UDim2.new(1,0,0,0)
         listFrame.ClipsDescendants = true
-        listFrame.BackgroundColor3 = Color3.fromRGB(45,45,45)
+        listFrame.BackgroundColor3 = library.theme.bg
 
         local layout = Instance.new("UIListLayout", listFrame)
 
@@ -160,17 +174,17 @@ function library:Window(name)
             opt.BackgroundTransparency = 1
             opt.Text = "   "..v
             opt.TextColor3 = Color3.new(1,1,1)
+            opt.Font = Enum.Font.Gotham
             opt.TextXAlignment = Enum.TextXAlignment.Left
 
             opt.MouseButton1Click:Connect(function()
                 title.Text = " "..name.." : "..v
                 window.flags[name] = v
-
                 if callback then callback(v) end
             end)
         end
 
-        reSize()
+        resize()
     end
 
     return window
